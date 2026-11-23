@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  deb:
+    name: Linux .deb
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Собрать пакет
+        run: bash packaging/build-deb.sh
+      - name: Проверить пакет
+        run: |
+          ls -lh dist/
+          dpkg-deb --info dist/*.deb
+          dpkg-deb --contents dist/*.deb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: deb
+          path: dist/*.deb
+          if-no-files-found: error
+
+  windows:
+    name: Windows .exe
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Установить PyInstaller
+        run: pip install --upgrade pyinstaller
+      - name: Собрать exe
+        run: pyinstaller --noconfirm --onefile --name sshkey-gui --add-data "static;static" desktop.py
+      - name: Проверить файл
+        run: |
+          dir dist
+          if (-not (Test-Path dist\sshkey-gui.exe)) { throw "exe не собрался" }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows
+          path: dist/sshkey-gui.exe
+          if-no-files-found: error
+
+  release:
+    name: Публикация релиза
+    needs: [deb, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Показать файлы
+        run: find artifacts -type f -exec ls -lh {} +
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/deb/*.deb
+            artifacts/windows/*.exe
+          generate_release_notes: true
+          fail_on_unmatched_files: true

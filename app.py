@@ -26,14 +26,14 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PORT = int(os.environ.get("SSHKEY_GUI_PORT", "8765"))
-VERSION = "0.6.0"
+VERSION = "0.6.1"
 
 SSH_DIR = Path(os.environ.get("SSHKEY_GUI_SSH_DIR", str(Path.home() / ".ssh"))).expanduser()
 CONFIG_DIR = Path(os.environ.get("SSHKEY_GUI_CONFIG_DIR", str(Path.home() / ".config" / "sshkey-gui"))).expanduser()
 CONFIG_PATH = CONFIG_DIR / "settings.json"
 
-SSH = shutil.which("ssh") or "/usr/bin/ssh"
-SSH_KEYGEN = shutil.which("ssh-keygen") or "/usr/bin/ssh-keygen"
+SSH = shutil.which("ssh") or "ssh"
+SSH_KEYGEN = shutil.which("ssh-keygen") or "ssh-keygen"
 
 # Общие опции: только выбранный ключ, без перебора ключей из агента
 BASE_OPTS = [

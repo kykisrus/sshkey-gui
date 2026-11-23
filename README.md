@@ -36,6 +36,38 @@
 
 ## Установка
 
+### Linux — пакет `.deb`
+
+Скачайте `sshkey-gui_<версия>_all.deb` со страницы
+[Releases](https://github.com/kykisrus/sshkey-gui/releases) и установите:
+
+```bash
+sudo apt install ./sshkey-gui_0.6.1_all.deb
+```
+
+После установки приложение появится в меню как **SSH-ключи**, а в терминале станет
+доступна команда `sshkey-gui`. Зависимости (`python3`, `python3-gi`,
+`gir1.2-webkit2-4.1`, `openssh-client`) `apt` поставит сам.
+
+Удаление:
+
+```bash
+sudo apt remove sshkey-gui
+```
+
+### Windows — `sshkey-gui.exe`
+
+Скачайте `sshkey-gui.exe` со страницы Releases и запустите — установка не требуется.
+Нужен Windows 10 или 11 со встроенным клиентом OpenSSH (`ssh.exe`, обычно уже есть в
+`C:\Windows\System32\OpenSSH`). Окна GTK в Windows нет, поэтому интерфейс откроется
+в браузере, а консольное окно приложения должно оставаться открытым, пока вы работаете.
+
+Особенности на Windows: создание ключей и просмотр списка работают полностью,
+передача ключа с паролем через GUI может не сработать из-за различий в askpass —
+в этом случае используйте ключ без пароля или `ssh-copy-id` из WSL.
+
+### Из исходников
+
 ```bash
 git clone git@github.com:kykisrus/sshkey-gui.git
 cd sshkey-gui
@@ -43,6 +75,7 @@ cd sshkey-gui
 ```
 
 Или, если архив уже скачан: распаковать и запустить `./install.sh` из папки проекта.
+Пакет `.deb` можно собрать самому: `./packaging/build-deb.sh` (результат в `dist/`).
 
 Скрипт раскладывает приложение в `~/.local/share/sshkey-gui` и создаёт:
 

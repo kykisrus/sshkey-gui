@@ -52,8 +52,19 @@ def run_window():
         gi.require_version("WebKit2", "4.1")
         from gi.repository import Gtk, WebKit2
     except Exception as exc:  # noqa: BLE001
-        print(f"GTK/WebKit недоступны ({exc}) — открываю в браузере")
+        # Без GTK (например, Windows или минимальный Linux) работаем через браузер,
+        # но процесс не завершаем — иначе вместе с ним остановится сервер.
+        print(f"GTK/WebKit недоступны ({exc}) — работаю через браузер")
+        server = start_server()
         webbrowser.open(URL)
+        print(f"Сервер работает: {URL}")
+        print("Закрой это окно терминала или нажми Ctrl+C, чтобы остановить.")
+        try:
+            threading.Event().wait()
+        except KeyboardInterrupt:
+            pass
+        if server:
+            server.shutdown()
         return 0
 
     server = start_server()

@@ -28,3 +28,7 @@ id_*
 .testhome/
 .snap*.py
 .shot*.png
+
+# Сборка
+.deb-build/
+dist/
