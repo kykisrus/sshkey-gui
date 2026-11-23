@@ -72,12 +72,14 @@ def run_window():
     window = Gtk.Window(title="SSH-ключи")
     window.set_default_size(1150, 760)
     window.set_position(Gtk.WindowPosition.CENTER)
-    icon = os.path.join(HERE, "icon.svg")
-    if os.path.exists(icon):
-        try:
-            window.set_icon_from_file(icon)
-        except Exception:  # noqa: BLE001
-            pass
+    for name in ("icon.png", "icon.svg"):
+        icon = os.path.join(HERE, name)
+        if os.path.exists(icon):
+            try:
+                window.set_icon_from_file(icon)
+                break
+            except Exception:  # noqa: BLE001
+                pass
 
     view = WebKit2.WebView()
     settings = view.get_settings()

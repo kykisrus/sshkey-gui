@@ -38,7 +38,7 @@ jobs:
       - name: Установить PyInstaller
         run: pip install --upgrade pyinstaller
       - name: Собрать exe
-        run: pyinstaller --noconfirm --onefile --name sshkey-gui --add-data "static;static" desktop.py
+        run: pyinstaller --noconfirm --onefile --name sshkey-gui --icon packaging/icon.ico --add-data "static;static" desktop.py
       - name: Проверить файл
         run: |
           dir dist

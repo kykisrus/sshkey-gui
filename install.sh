@@ -10,7 +10,7 @@ SRC="$(cd "$(dirname "$0")" && pwd)"
 DEST="$HOME/.local/share/sshkey-gui"
 BIN="$HOME/.local/bin/sshkey-gui"
 ENTRY="$HOME/.local/share/applications/sshkey-gui.desktop"
-ICON_DIR="$HOME/.local/share/icons/hicolor/scalable/apps"
+ICON_DIR="$HOME/.local/share/icons/hicolor/256x256/apps"
 
 DESKTOP_DIR=""
 for d in "$HOME/Рабочий стол" "$HOME/Desktop" "$HOME/Загрузки"; do
@@ -19,7 +19,7 @@ done
 
 uninstall() {
   rm -rf "$DEST"
-  rm -f "$BIN" "$ENTRY" "$ICON_DIR/sshkey-gui.svg"
+  rm -f "$BIN" "$ENTRY" "$ICON_DIR/sshkey-gui.png" "$HOME/.local/share/icons/hicolor/scalable/apps/sshkey-gui.svg"
   [[ -n "$DESKTOP_DIR" ]] && rm -f "$DESKTOP_DIR/sshkey-gui.desktop"
   command -v update-desktop-database >/dev/null && update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
   echo "Удалено."
@@ -40,9 +40,9 @@ print("файлы приложения корректны")
 PY
 
 mkdir -p "$DEST/static" "$HOME/.local/bin" "$HOME/.local/share/applications" "$ICON_DIR"
-install -m 644 "$SRC/app.py" "$SRC/desktop.py" "$SRC/icon.svg" "$DEST/"
+install -m 644 "$SRC/app.py" "$SRC/desktop.py" "$SRC/icon.png" "$DEST/"
 install -m 644 "$SRC/static/index.html" "$DEST/static/index.html"
-install -m 644 "$SRC/icon.svg" "$ICON_DIR/sshkey-gui.svg"
+install -m 644 "$SRC/icon.png" "$ICON_DIR/sshkey-gui.png"
 
 cat > "$BIN" <<EOF
 #!/usr/bin/env bash

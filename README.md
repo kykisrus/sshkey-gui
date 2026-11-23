@@ -202,7 +202,8 @@ sshkey-gui/
 ├── app.py              # локальный HTTP-сервер и вся логика
 ├── desktop.py          # окно GTK3 + WebKit2 (фолбэк — браузер)
 ├── static/index.html   # интерфейс (HTML/CSS/JS, без внешних зависимостей)
-├── icon.svg            # иконка приложения
+├── icon.png            # иконка приложения
+├── packaging/          # сборка .deb и иконка .ico для Windows
 ├── docs/hero.jpg       # изображение для README
 ├── install.sh          # установка и удаление
 ├── run.sh              # запуск из папки проекта

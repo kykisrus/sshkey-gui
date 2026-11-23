@@ -21,12 +21,12 @@ mkdir -p "$DIST" \
          "$BUILD/usr/bin" \
          "$APP_DIR/static" \
          "$BUILD/usr/share/applications" \
-         "$BUILD/usr/share/icons/hicolor/scalable/apps" \
+         "$BUILD/usr/share/icons/hicolor/256x256/apps" \
          "$BUILD/usr/share/doc/$PKG"
 
 install -m 644 "$ROOT/app.py" "$ROOT/desktop.py" "$APP_DIR/"
 install -m 644 "$ROOT/static/index.html" "$APP_DIR/static/"
-install -m 644 "$ROOT/icon.svg" "$BUILD/usr/share/icons/hicolor/scalable/apps/$PKG.svg"
+install -m 644 "$ROOT/icon.png" "$BUILD/usr/share/icons/hicolor/256x256/apps/$PKG.png"
 install -m 644 "$ROOT/README.md" "$ROOT/LICENSE" "$BUILD/usr/share/doc/$PKG/"
 gzip -9 -n -c "$ROOT/CHANGELOG.md" > "$BUILD/usr/share/doc/$PKG/changelog.gz"
 
