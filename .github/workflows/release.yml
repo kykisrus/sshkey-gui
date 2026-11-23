@@ -54,6 +54,12 @@ jobs:
     needs: [deb, windows]
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Собрать описание релиза из CHANGELOG
+        run: |
+          chmod +x packaging/release-notes.sh
+          bash packaging/release-notes.sh "${GITHUB_REF_NAME}" > release-notes.md
+          cat release-notes.md
       - uses: actions/download-artifact@v4
         with:
           path: artifacts
@@ -61,8 +67,8 @@ jobs:
         run: find artifacts -type f -exec ls -lh {} +
       - uses: softprops/action-gh-release@v2
         with:
+          body_path: release-notes.md
           files: |
             artifacts/deb/*.deb
             artifacts/windows/*.exe
-          generate_release_notes: true
           fail_on_unmatched_files: true
