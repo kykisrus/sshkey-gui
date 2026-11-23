@@ -15,6 +15,7 @@ import shlex
 import shutil
 import socket
 import subprocess
+import sys
 import tarfile
 import tempfile
 import threading
@@ -26,14 +27,55 @@ from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
 PORT = int(os.environ.get("SSHKEY_GUI_PORT", "8765"))
-VERSION = "0.6.3"
+VERSION = "0.6.4"
 
-SSH_DIR = Path(os.environ.get("SSHKEY_GUI_SSH_DIR", str(Path.home() / ".ssh"))).expanduser()
-CONFIG_DIR = Path(os.environ.get("SSHKEY_GUI_CONFIG_DIR", str(Path.home() / ".config" / "sshkey-gui"))).expanduser()
+IS_WINDOWS = os.name == "nt"
+PLATFORM = "windows" if IS_WINDOWS else ("linux" if sys.platform.startswith("linux") else sys.platform)
+
+
+def default_key_dir(windows=None):
+    r"""Каталог ключей по правилам платформы.
+
+    Windows: %USERPROFILE%\.ssh (там же, где ищет встроенный OpenSSH).
+    Linux/macOS: ~/.ssh.
+    """
+    windows = IS_WINDOWS if windows is None else windows
+    if windows:
+        base = os.environ.get("USERPROFILE") or str(Path.home())
+        return Path(base) / ".ssh"
+    return Path.home() / ".ssh"
+
+
+def default_config_dir(windows=None):
+    r"""Каталог настроек: %APPDATA%\sshkey-gui на Windows, ~/.config/sshkey-gui иначе."""
+    windows = IS_WINDOWS if windows is None else windows
+    if windows:
+        appdata = os.environ.get("APPDATA")
+        if appdata:
+            return Path(appdata) / "sshkey-gui"
+        return Path.home() / "AppData" / "Roaming" / "sshkey-gui"
+    return Path.home() / ".config" / "sshkey-gui"
+
+
+def find_binary(name, windows_candidates=()):
+    """Ищет программу в PATH, а на Windows — ещё и в стандартной папке OpenSSH."""
+    found = shutil.which(name)
+    if found:
+        return found
+    if IS_WINDOWS:
+        for candidate in windows_candidates:
+            expanded = os.path.expandvars(candidate)
+            if os.path.exists(expanded):
+                return expanded
+    return name
+
+
+SSH_DIR = Path(os.environ.get("SSHKEY_GUI_SSH_DIR", str(default_key_dir()))).expanduser()
+CONFIG_DIR = Path(os.environ.get("SSHKEY_GUI_CONFIG_DIR", str(default_config_dir()))).expanduser()
 CONFIG_PATH = CONFIG_DIR / "settings.json"
 
-SSH = shutil.which("ssh") or "ssh"
-SSH_KEYGEN = shutil.which("ssh-keygen") or "ssh-keygen"
+SSH = find_binary("ssh", [r"%SystemRoot%\System32\OpenSSH\ssh.exe"])
+SSH_KEYGEN = find_binary("ssh-keygen", [r"%SystemRoot%\System32\OpenSSH\ssh-keygen.exe"])
 
 # Общие опции: только выбранный ключ, без перебора ключей из агента
 BASE_OPTS = [
@@ -300,11 +342,12 @@ class Handler(BaseHTTPRequestHandler):
 
         if path == "/api/keys":
             return self._send(200, {"keys": list_keys(), "home": str(SSH_DIR),
-                                    "version": VERSION, "dirs": [str(d) for d in key_dirs()]})
+                                    "version": VERSION, "platform": PLATFORM,
+                                    "dirs": [str(d) for d in key_dirs()]})
 
         if path == "/api/settings":
             return self._send(200, {"keydirs": load_settings()["keydirs"], "ssh_dir": str(SSH_DIR),
-                                    "config": str(CONFIG_PATH)})
+                                    "config": str(CONFIG_PATH), "platform": PLATFORM})
 
         if path == "/api/export":
             include_private = "private=1" in query

@@ -203,7 +203,7 @@
 
         <div class="panel">
           <div class="panel-head"><h2>О приложении</h2></div>
-          <div class="muted">Версия <span id="aboutVer"></span> · лицензия MIT · автор kykis_rus</div>
+          <div class="muted">Версия <span id="aboutVer"></span> · <span id="aboutPlat"></span> · лицензия MIT · автор kykis_rus</div>
           <div class="hint">Файл настроек: <code id="cfgPath"></code></div>
         </div>
       </div>
@@ -271,6 +271,7 @@ async function loadKeys(){
   $('keysPath').textContent = data.home || '';
   $('version').textContent = data.version ? 'v' + data.version : '';
   $('aboutVer').textContent = data.version || '';
+  $('aboutPlat').textContent = data.platform === 'windows' ? 'Windows' : (data.platform === 'linux' ? 'Linux' : (data.platform || ''));
 
   const box = $('keys');
   box.innerHTML = '';

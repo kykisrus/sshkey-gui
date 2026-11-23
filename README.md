@@ -105,6 +105,22 @@ cd sshkey-gui
 | `SSHKEY_GUI_SSH_DIR` | `~/.ssh` | основной каталог ключей |
 | `SSHKEY_GUI_CONFIG_DIR` | `~/.config/sshkey-gui` | каталог настроек |
 
+## Где хранятся файлы
+
+Приложение само определяет платформу и смотрит в положенное место:
+
+| Что | Linux / macOS | Windows |
+|---|---|---|
+| Ключи | `~/.ssh` | `%USERPROFILE%\.ssh` |
+| Настройки | `~/.config/sshkey-gui/settings.json` | `%APPDATA%\sshkey-gui\settings.json` |
+
+На Windows это тот же каталог, где ищет ключи встроенный OpenSSH, поэтому список
+совпадает с тем, что видит `ssh.exe`. Если `ssh` и `ssh-keygen` не в `PATH`,
+на Windows они дополнительно ищутся в `C:\Windows\System32\OpenSSH`.
+
+Переменные `SSHKEY_GUI_SSH_DIR` и `SSHKEY_GUI_CONFIG_DIR` переопределяют оба пути.
+Фактические пути видны в «Настройках» и в шапке окна.
+
 ## Как пользоваться
 
 1. Слева выберите ключ. Если для `*.pub` нет приватной пары, ключ выбрать нельзя.
