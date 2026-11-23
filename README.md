@@ -37,8 +37,12 @@
 ## Установка
 
 ```bash
+git clone git@github.com:kykisrus/sshkey-gui.git
+cd sshkey-gui
 ./install.sh
 ```
+
+Или, если архив уже скачан: распаковать и запустить `./install.sh` из папки проекта.
 
 Скрипт раскладывает приложение в `~/.local/share/sshkey-gui` и создаёт:
 
