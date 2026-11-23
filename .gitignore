@@ -23,3 +23,8 @@ build/
 *.pub
 id_*
 .env
+
+# Тестовые артефакты
+.testhome/
+.snap*.py
+.shot*.png

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SSH-ключи — передача на сервер</title>
+<title>SSH-ключи</title>
 <style>
   :root{
     --bg:#12171d; --panel:#161b22; --panel2:#1c2331; --line:#2a3341;
@@ -11,33 +11,37 @@
   }
   *{box-sizing:border-box}
   html,body{height:100%}
-  body{
-    margin:0;background:var(--bg);color:var(--ink);
-    font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
-    display:flex;flex-direction:column;overflow:hidden;
-  }
-  header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
-  header h1{font-size:16px;margin:0;font-weight:600}
+  body{margin:0;background:var(--bg);color:var(--ink);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+  header{display:flex;align-items:center;gap:12px;padding:12px 18px;border-bottom:1px solid var(--line);background:var(--panel);flex:0 0 auto}
+  header h1{font-size:15px;margin:0;font-weight:600}
   header .path{color:var(--ink2);font-size:12px;font-family:ui-monospace,monospace}
   header .spacer{flex:1}
   header .ver{color:var(--ink2);font-size:12px;font-family:ui-monospace,monospace;border:1px solid var(--line);border-radius:999px;padding:2px 9px;white-space:nowrap}
 
-  main{
-    flex:1 1 auto;min-height:0;display:grid;gap:16px;padding:16px;width:100%;
-    grid-template-columns:minmax(320px,420px) 1fr;
-  }
-  .panel{
-    background:var(--panel);border:1px solid var(--line);border-radius:12px;
-    padding:14px;display:flex;flex-direction:column;min-height:0;
-  }
-  .panel h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin:0 0 10px;flex:0 0 auto}
+  .shell{flex:1 1 auto;min-height:0;display:flex}
+  nav.side{width:210px;flex:0 0 auto;border-right:1px solid var(--line);background:var(--panel);padding:12px;display:flex;flex-direction:column;gap:6px}
+  .nav-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:9px;cursor:pointer;color:var(--ink2);border:1px solid transparent;user-select:none}
+  .nav-item:hover{background:var(--panel2);color:var(--ink)}
+  .nav-item.active{background:#1d2a44;border-color:#2f4a7a;color:var(--ink)}
+  .nav-item.disabled{opacity:.45;cursor:not-allowed}
+  .nav-item svg{width:17px;height:17px;flex:0 0 auto;stroke:currentColor;fill:none;stroke-width:1.8}
+  .nav-item .lbl{flex:1}
+  .nav-item .tag{font-size:10px;text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--line);border-radius:999px;padding:1px 6px;color:var(--ink2)}
 
-  /* прокрутка только внутри списка ключей */
+  .content{flex:1 1 auto;min-width:0;display:flex;padding:14px;gap:14px}
+  .view{display:none;flex:1 1 auto;min-width:0;gap:14px}
+  .view.on{display:flex}
+
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px;display:flex;flex-direction:column;min-height:0}
+  .panel-head{display:flex;align-items:center;gap:10px;margin:0 0 10px;flex:0 0 auto}
+  .panel-head h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--ink2);margin:0;font-weight:600}
+  .panel-head .spacer{flex:1}
+
+  #view-keys .keys-panel{flex:0 0 380px;width:380px}
   #keys{overflow-y:auto;flex:1 1 auto;min-height:0;padding-right:4px;scrollbar-gutter:stable}
   #keys::-webkit-scrollbar{width:10px}
   #keys::-webkit-scrollbar-thumb{background:#33405a;border-radius:8px}
   #keys::-webkit-scrollbar-track{background:transparent}
-
   .key{display:flex;gap:10px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:10px;margin-bottom:8px;cursor:pointer;background:var(--panel2);transition:.15s}
   .key:hover{border-color:#3c4a5e}
   .key.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent) inset}
@@ -48,94 +52,217 @@
   .key .meta{color:var(--ink2);font-size:12px;word-break:break-all}
 
   label{display:block;font-size:12px;color:var(--ink2);margin:0 0 4px}
-  input{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:#0c1015;color:var(--ink);font:inherit}
-  input:focus{outline:none;border-color:var(--accent)}
+  input,select{width:100%;padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:#0c1015;color:var(--ink);font:inherit}
+  input:focus,select:focus{outline:none;border-color:var(--accent)}
   .row{display:grid;grid-template-columns:1fr 110px;gap:10px}
   .row3{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
   .field{margin-bottom:10px}
   .note{color:var(--ink2);font-size:12px;margin:-4px 0 10px}
   .actions{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap;flex:0 0 auto}
-  button{padding:10px 16px;border-radius:9px;border:1px solid transparent;font:inherit;font-weight:600;cursor:pointer}
-  button.primary{background:var(--accent);color:#fff}
-  button.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button,.btn{padding:9px 14px;border-radius:9px;border:1px solid transparent;font:inherit;font-weight:600;cursor:pointer;text-decoration:none;display:inline-block}
+  button.primary,.btn.primary{background:var(--accent);color:#fff}
+  button.ghost,.btn.ghost{background:transparent;color:var(--ink);border-color:var(--line)}
+  button.small,.btn.small{padding:6px 10px;font-size:12px}
   button:disabled{opacity:.55;cursor:progress}
   .badges{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;flex:0 0 auto}
   .badge{font-size:12px;padding:5px 10px;border-radius:999px;background:var(--panel2);border:1px solid var(--line);color:var(--ink2)}
   .badge.ok{color:#bbf7d0;border-color:#14532d;background:#052e16}
   .badge.bad{color:#fecaca;border-color:#7f1d1d;background:#2a0b0b}
   .badge.warn{color:#fde68a;border-color:#78350f;background:#2a1a05}
-
-  pre{
-    margin:12px 0 0;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;
-    color:#cfd9e3;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;
-    flex:1 1 auto;min-height:80px;overflow:auto;
-  }
+  pre{margin:12px 0 0;padding:12px;background:var(--panel2);border:1px solid var(--line);border-radius:10px;color:#cfd9e3;font:12px/1.5 ui-monospace,monospace;white-space:pre-wrap;flex:1 1 auto;min-height:80px;overflow:auto}
   .hint{color:var(--ink2);font-size:12px;margin-top:8px;flex:0 0 auto}
 
-  @media (max-width:900px){
-    body{overflow:auto}
-    main{grid-template-columns:1fr;min-height:0}
-    #keys{max-height:40vh}
+  .overlay{position:fixed;inset:0;background:rgba(6,9,13,.72);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+  .overlay.on{display:flex}
+  .modal{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+  .modal h3{margin:0 0 14px;font-size:15px}
+
+  #view-settings{flex-direction:column;overflow-y:auto}
+  .settings-grid{display:grid;gap:14px}
+  .dir-row{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--line);border-radius:9px;background:var(--panel2);margin-bottom:8px;font-family:ui-monospace,monospace;font-size:12px;word-break:break-all}
+  .dir-row .x{margin-left:auto;cursor:pointer;color:var(--ink2);border:1px solid var(--line);border-radius:6px;padding:1px 7px;flex:0 0 auto}
+  .dir-row .x:hover{color:var(--ink);border-color:#3c4a5e}
+  .muted{color:var(--ink2);font-size:12px}
+  .soon{display:flex;flex-direction:column;gap:8px;align-items:flex-start;justify-content:center;flex:1;color:var(--ink2)}
+  @media (max-width:1050px){
+    #view-keys{flex-direction:column;overflow-y:auto}
+    #view-keys .keys-panel{width:auto;flex:0 0 auto;max-height:45vh}
+    .shell{flex-direction:column}
+    nav.side{width:auto;flex-direction:row;border-right:none;border-bottom:1px solid var(--line);overflow-x:auto}
   }
 </style>
 </head>
 <body>
 <header>
-  <h1>Передача SSH-ключа</h1>
+  <h1>SSH-ключи</h1>
   <span class="path" id="keysPath"></span>
   <span class="spacer"></span>
   <span class="ver" id="version"></span>
 </header>
 
-<main>
-  <section class="panel">
-    <h2>Ключи</h2>
-    <div id="keys"><div class="hint">Загружаю…</div></div>
-    <div class="hint">Показаны файлы <code>*.pub</code> из ~/.ssh. Без приватной пары ключ выбрать нельзя.</div>
-  </section>
-
-  <section class="panel">
-    <h2>Сервер</h2>
-    <div class="row">
-      <div class="field">
-        <label for="host">IP или хост сервера</label>
-        <input id="host" placeholder="127.0.0.1" autocomplete="off" spellcheck="false">
-      </div>
-      <div class="field">
-        <label for="port">Порт</label>
-        <input id="port" value="22" inputmode="numeric">
-      </div>
+<div class="shell">
+  <nav class="side">
+    <div class="nav-item active" data-view="keys">
+      <svg viewBox="0 0 24 24"><circle cx="8" cy="8" r="4"/><path d="M11 11l7 7M16 16l2-2M18 18l2-2"/></svg>
+      <span class="lbl">SSH-ключи</span>
     </div>
-    <div class="note">Ключ передаётся на этот адрес. <code>127.0.0.1</code> — только пример: это адрес самого интерфейса, а не сервера.</div>
+    <div class="nav-item disabled" title="Раздел в разработке">
+      <svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      <span class="lbl">Подключение</span>
+      <span class="tag">скоро</span>
+    </div>
+    <div class="nav-item" data-view="settings">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"/></svg>
+      <span class="lbl">Настройки</span>
+    </div>
+  </nav>
+
+  <div class="content">
+    <section class="view on" id="view-keys">
+      <div class="panel keys-panel">
+        <div class="panel-head">
+          <h2>SSH-ключи (публичные)</h2>
+          <span class="spacer"></span>
+          <button class="primary small" id="newKeyBtn">+ Создать ключ…</button>
+        </div>
+        <div id="keys"><div class="hint">Загружаю…</div></div>
+        <div class="hint">Без приватной пары ключ выбрать нельзя.</div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head"><h2>Сервер</h2></div>
+        <div class="row">
+          <div class="field">
+            <label for="host">IP или хост сервера</label>
+            <input id="host" placeholder="127.0.0.1" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="port">Порт</label>
+            <input id="port" value="22" inputmode="numeric">
+          </div>
+        </div>
+        <div class="note">Ключ передаётся на этот адрес. <code>127.0.0.1</code> — только пример.</div>
+        <div class="row3">
+          <div class="field">
+            <label for="user">Пользователь на сервере</label>
+            <input id="user" placeholder="user" autocomplete="off" spellcheck="false">
+          </div>
+          <div class="field">
+            <label for="password">Пароль (для передачи, необязательно)</label>
+            <input id="password" type="password" placeholder="если вход по паролю" autocomplete="new-password">
+          </div>
+        </div>
+        <div class="actions">
+          <button class="ghost" id="checkBtn">Проверить связь</button>
+          <button class="primary" id="copyBtn">Передать ключ</button>
+        </div>
+        <div class="badges" id="badges"></div>
+        <pre id="log">Готово к работе. Выбери ключ слева, укажи IP и нажми «Проверить связь».</pre>
+      </div>
+    </section>
+
+    <section class="view" id="view-connection">
+      <div class="panel">
+        <div class="panel-head"><h2>Подключение</h2></div>
+        <div class="soon">
+          <b>Раздел в разработке.</b>
+          <span>Здесь появится управление сохранёнными подключениями: хосты, пользователи, порты и быстрый переход к серверу.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="view" id="view-settings">
+      <div class="settings-grid">
+        <div class="panel">
+          <div class="panel-head"><h2>Каталоги с ключами</h2></div>
+          <div class="muted">Основной каталог: <code id="sshDir"></code></div>
+          <div class="note">Дополнительные каталоги сканируются вместе с основным.</div>
+          <div id="dirsList"></div>
+          <div class="row" style="grid-template-columns:1fr auto">
+            <input id="newDir" placeholder="/home/user/keys" autocomplete="off" spellcheck="false">
+            <button class="ghost" id="addDir">Добавить</button>
+          </div>
+          <div class="actions">
+            <button class="primary" id="saveDirs">Сохранить</button>
+          </div>
+          <div class="hint" id="settingsStatus"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>Выгрузка ключей</h2></div>
+          <div class="muted">Архив <code>.tar.gz</code> с публичными ключами из всех каталогов.</div>
+          <label style="display:flex;gap:8px;align-items:center;margin-top:12px">
+            <input type="checkbox" id="withPrivate" style="width:auto">
+            <span>включить приватные ключи (секрет!)</span>
+          </label>
+          <div class="actions">
+            <a class="btn primary" id="exportBtn" href="/api/export?private=0" download>Скачать архив</a>
+          </div>
+          <div class="hint">Приватные ключи не покидают машину, но архив с ними нужно хранить как секрет.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head"><h2>О приложении</h2></div>
+          <div class="muted">Версия <span id="aboutVer"></span> · лицензия MIT · автор kykis_rus</div>
+          <div class="hint">Файл настроек: <code id="cfgPath"></code></div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<div class="overlay" id="keygenOverlay">
+  <div class="modal">
+    <h3>Создать SSH-ключ</h3>
+    <div class="field">
+      <label for="kgName">Имя файла</label>
+      <input id="kgName" placeholder="id_ed25519_work" autocomplete="off" spellcheck="false">
+    </div>
     <div class="row3">
       <div class="field">
-        <label for="user">Пользователь на сервере</label>
-        <input id="user" placeholder="user" autocomplete="off" spellcheck="false">
+        <label for="kgType">Тип</label>
+        <select id="kgType">
+          <option value="ed25519">ed25519</option>
+          <option value="rsa">rsa (4096)</option>
+          <option value="ecdsa">ecdsa</option>
+        </select>
       </div>
       <div class="field">
-        <label for="password">Пароль (для передачи, необязательно)</label>
-        <input id="password" type="password" placeholder="если вход по паролю" autocomplete="new-password">
+        <label for="kgComment">Комментарий</label>
+        <input id="kgComment" placeholder="например work@laptop" autocomplete="off" spellcheck="false">
       </div>
     </div>
-
-    <div class="actions">
-      <button class="ghost" id="checkBtn">Проверить связь</button>
-      <button class="primary" id="copyBtn">Передать ключ</button>
+    <div class="field">
+      <label for="kgPass">Парольная фраза (необязательно)</label>
+      <input id="kgPass" type="password" placeholder="оставь пустым для ключа без пароля" autocomplete="new-password">
     </div>
-
-    <div class="badges" id="badges"></div>
-    <pre id="log">Готово к работе. Выбери ключ слева, укажи IP и нажми «Проверить связь».</pre>
-  </section>
-</main>
+    <div class="actions">
+      <button class="primary" id="kgCreate">Создать</button>
+      <button class="ghost" id="kgCancel">Отмена</button>
+    </div>
+    <pre id="kgStatus" style="display:none"></pre>
+  </div>
+</div>
 
 <script>
 const $ = (id) => document.getElementById(id);
 let KEYS = [];
 let SELECTED = null;
+let DIRS = [];
 
 function log(text){ $('log').textContent = text; }
 function badge(text, cls){ const b=document.createElement('span'); b.className='badge '+(cls||''); b.textContent=text; $('badges').appendChild(b); }
 function clearBadges(){ $('badges').innerHTML=''; }
+
+document.querySelectorAll('.nav-item[data-view]').forEach(item => {
+  item.onclick = () => {
+    document.querySelectorAll('.nav-item').forEach(x => x.classList.remove('active'));
+    item.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('on'));
+    $('view-' + item.dataset.view).classList.add('on');
+    if (item.dataset.view === 'settings') loadSettings();
+  };
+});
 
 async function loadKeys(){
   const r = await fetch('/api/keys');
@@ -143,10 +270,11 @@ async function loadKeys(){
   KEYS = data.keys || [];
   $('keysPath').textContent = data.home || '';
   $('version').textContent = data.version ? 'v' + data.version : '';
+  $('aboutVer').textContent = data.version || '';
 
   const box = $('keys');
   box.innerHTML = '';
-  if (!KEYS.length){ box.innerHTML = '<div class="hint">В ~/.ssh нет ключей *.pub</div>'; return; }
+  if (!KEYS.length){ box.innerHTML = '<div class="hint">Ключей нет. Нажми «Создать ключ…».</div>'; return; }
 
   KEYS.forEach((k) => {
     const el = document.createElement('div');
@@ -167,17 +295,81 @@ async function loadKeys(){
   });
 }
 
+$('newKeyBtn').onclick = () => {
+  $('kgStatus').style.display = 'none'; $('kgStatus').textContent = '';
+  $('kgName').value = ''; $('kgComment').value = ''; $('kgPass').value = '';
+  $('keygenOverlay').classList.add('on'); $('kgName').focus();
+};
+$('kgCancel').onclick = () => $('keygenOverlay').classList.remove('on');
+$('kgCreate').onclick = async () => {
+  const body = { name: $('kgName').value.trim(), type: $('kgType').value,
+                 comment: $('kgComment').value.trim(), passphrase: $('kgPass').value };
+  if (!body.name){ $('kgStatus').style.display='block'; $('kgStatus').textContent = 'Укажи имя файла.'; return; }
+  $('kgCreate').disabled = true;
+  try{
+    const r = await fetch('/api/keygen', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
+    const d = await r.json();
+    if (d.ok){
+      $('keygenOverlay').classList.remove('on');
+      SELECTED = null; await loadKeys();
+    } else {
+      $('kgStatus').style.display='block';
+      $('kgStatus').textContent = d.error || 'Не удалось создать ключ.';
+    }
+  } catch(e){
+    $('kgStatus').style.display='block'; $('kgStatus').textContent = 'Сбой: ' + e;
+  } finally { $('kgCreate').disabled = false; }
+};
+
+async function loadSettings(){
+  const r = await fetch('/api/settings');
+  const d = await r.json();
+  DIRS = d.keydirs || [];
+  $('sshDir').textContent = d.ssh_dir || '';
+  $('cfgPath').textContent = d.config || '';
+  renderDirs();
+}
+function renderDirs(){
+  const box = $('dirsList');
+  box.innerHTML = '';
+  if (!DIRS.length){ box.innerHTML = '<div class="hint">Дополнительных каталогов нет.</div>'; return; }
+  DIRS.forEach((dir, i) => {
+    const row = document.createElement('div');
+    row.className = 'dir-row';
+    row.innerHTML = `<span>${dir}</span><span class="x" title="Убрать">✕</span>`;
+    row.querySelector('.x').onclick = () => { DIRS.splice(i,1); renderDirs(); };
+    box.appendChild(row);
+  });
+}
+$('addDir').onclick = () => {
+  const v = $('newDir').value.trim();
+  if (!v) return;
+  if (!v.startsWith('/')){ $('settingsStatus').textContent = 'Нужен абсолютный путь, например /home/user/keys'; return; }
+  if (!DIRS.includes(v)) DIRS.push(v);
+  $('newDir').value = ''; renderDirs();
+};
+$('saveDirs').onclick = async () => {
+  const r = await fetch('/api/settings', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ keydirs: DIRS }) });
+  const d = await r.json();
+  DIRS = d.keydirs || DIRS;
+  renderDirs();
+  $('settingsStatus').textContent = (d.error ? 'Ошибка: ' + d.error + '. ' : 'Сохранено. ') + ((d.errors || []).join('; ') || '');
+  SELECTED = null; await loadKeys();
+};
+
+$('withPrivate').onchange = (e) => {
+  $('exportBtn').href = '/api/export?private=' + (e.target.checked ? '1' : '0');
+};
+
 function payload(){
   return { host: $('host').value.trim(), port: parseInt($('port').value || '22', 10),
            user: $('user').value.trim(), key: SELECTED ? SELECTED.private : '',
            password: $('password').value };
 }
-
 async function post(url, body){
   const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
   return r.json();
 }
-
 $('checkBtn').onclick = async () => {
   clearBadges();
   const p = payload();
@@ -186,15 +378,11 @@ $('checkBtn').onclick = async () => {
   try{
     const d = await post('/api/check', p);
     if (d.error){ log('Ошибка: ' + d.error); return; }
-    if (d.tcp.ok){
-      badge(`TCP ок · ${d.tcp.ms} мс`, 'ok');
-      if (d.tcp.banner) badge(d.tcp.banner.split(' ')[0], '');
-    } else {
-      badge('TCP недоступен', 'bad');
-    }
+    if (d.tcp.ok){ badge(`TCP ок · ${d.tcp.ms} мс`, 'ok'); if (d.tcp.banner) badge(d.tcp.banner.split(' ')[0], ''); }
+    else badge('TCP недоступен', 'bad');
     let text = `Сервер: ${d.user || '—'}@${d.host}:${d.port}\n`;
     if (d.tcp.ok && d.key_auth){
-      if (d.key_auth.ok) { badge('вход по ключу работает', 'ok'); text += `Ключ уже пускает: ${d.key_auth.ms} мс\n`; }
+      if (d.key_auth.ok){ badge('вход по ключу работает', 'ok'); text += `Ключ уже пускает: ${d.key_auth.ms} мс\n`; }
       else { badge('ключ ещё не работает', 'warn'); text += `Проверка ключа: ${d.key_auth.detail || 'отказ'}\n`; }
     }
     text += d.tcp.ok ? `SSH-баннер: ${d.tcp.banner || 'нет'}\n` : `Ошибка TCP: ${d.tcp.error}\n`;
@@ -202,7 +390,6 @@ $('checkBtn').onclick = async () => {
   } catch(e){ log('Сбой запроса: ' + e); }
   finally { $('checkBtn').disabled = false; }
 };
-
 $('copyBtn').onclick = async () => {
   clearBadges();
   const p = payload();
@@ -215,13 +402,12 @@ $('copyBtn').onclick = async () => {
     let text = (d.message || '') + `\nСервер: ${p.user || '—'}@${p.host}:${p.port}\n`;
     if (d.copy) text += `\nУстановка: код ${d.copy.code}, ${d.copy.ms} мс\n${d.copy.stdout || ''}\n${d.copy.stderr || ''}`;
     if (d.verify) text += `\nПроверка входа по ключу: ${d.verify.ok ? 'успешно' : 'нет'} (${d.verify.ms} мс)\n${d.verify.detail || ''}`;
-    log(text.trim());
-    $('password').value = '';
+    log(text.trim()); $('password').value = '';
   } catch(e){ log('Сбой запроса: ' + e); }
   finally { $('copyBtn').disabled = false; }
 };
 
-loadKeys();
+loadKeys(); loadSettings();
 </script>
 </body>
 </html>
