@@ -1,0 +1,26 @@
+name: Проверка
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check:
+    name: Код и документы
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Синтаксис Python
+        run: python3 -m py_compile app.py desktop.py
+
+      - name: Версии в документах совпадают
+        run: bash packaging/check-docs.sh
+
+      - name: Пакет .deb собирается
+        run: bash packaging/build-deb.sh
+
+      - name: Приложение запускается
+        run: SSHKEY_GUI_PORT=8799 python3 desktop.py --selftest

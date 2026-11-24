@@ -5,7 +5,7 @@
 Небольшое десктопное приложение для Linux: показывает SSH-ключи, создаёт новые,
 проверяет связь с сервером и передаёт публичный ключ, чтобы дальше входить без пароля.
 
-**Версия:** 0.6.0 · **Лицензия:** MIT · **Автор:** kykis_rus
+**Версия:** 0.6.4 · **Лицензия:** MIT · **Автор:** kykis_rus
 
 ---
 
@@ -42,7 +42,7 @@
 [Releases](https://github.com/kykisrus/sshkey-gui/releases) и установите:
 
 ```bash
-sudo apt install ./sshkey-gui_0.6.1_all.deb
+sudo apt install ./sshkey-gui_0.6.4_all.deb   # подставь скачанную версию
 ```
 
 После установки приложение появится в меню как **SSH-ключи**, а в терминале станет
@@ -219,13 +219,14 @@ sshkey-gui/
 ├── desktop.py          # окно GTK3 + WebKit2 (фолбэк — браузер)
 ├── static/index.html   # интерфейс (HTML/CSS/JS, без внешних зависимостей)
 ├── icon.png            # иконка приложения
-├── packaging/          # сборка .deb и иконка .ico для Windows
+├── packaging/          # сборка .deb, иконка .ico, описание релиза, check-docs
 ├── docs/hero.jpg       # изображение для README
 ├── install.sh          # установка и удаление
 ├── run.sh              # запуск из папки проекта
 ├── README.md
 ├── SECURITY.md
 ├── CHANGELOG.md
+├── RELEASE.md          # как выпускать новую версию
 ├── LICENSE
 └── VERSION
 ```
@@ -255,6 +256,8 @@ curl -s -X POST http://127.0.0.1:8765/api/check \
 
 ```bash
 python3 desktop.py --selftest   # поднимает сервер и проверяет страницу
+bash packaging/check-docs.sh    # версии в README, CHANGELOG и коде совпадают
+bash packaging/build-deb.sh     # пакет собирается
 ```
 
 Поиск внешних ресурсов и личных данных в коде:
