@@ -31,4 +31,3 @@ id_*
 
 # Сборка
 .deb-build/
-dist/
